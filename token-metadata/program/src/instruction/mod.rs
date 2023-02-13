@@ -736,7 +736,7 @@ pub enum MetadataInstruction {
     /// collection, the update authority of the collection is required.  Note a collection authority
     /// record PDA can also be used in this case.
     #[account(0, writable, name="metadata", desc="Metadata account")]
-    #[account(1, signer, writable, name="payer", desc="Payer")]
+    #[account(1, signer, writable, name="payer", desc="Payer")]  //TODO prob not needed
     #[account(2, optional, signer, name="creator", desc="Creator to verify")]
     #[account(3, optional, signer, name="collection_authority", desc="Collection Update authority")]
     #[account(4, optional, name="collection_mint", desc="Mint of the Collection")]
