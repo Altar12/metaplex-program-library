@@ -726,18 +726,26 @@ pub enum MetadataInstruction {
     #[default_optional_accounts]
     Use(UseArgs),
 
-    /// Verifies that an asset belongs in an specified collection.
-    /// 
+    /// Verifies that an asset was created by a specific creator or belongs in an specified collection.
+    ///
     /// The configurable `authorization_rules` only apply to `ProgrammableNonFungible` assets and
     /// it may require additional accounts to validate the rules.
-    /// 
+    ///
     /// Depending on the type of verification (e.g., creator or collection), additional accounts
-    /// are required.
+    /// are required.  In the case of creator verification, the creator is required.  In the case of
+    /// collection, the update authority of the collection is required.  Note a collection authority
+    /// record PDA can also be used in this case.
     #[account(0, writable, name="metadata", desc="Metadata account")]
-    #[account(1, signer, writable, name="collection_authority", desc="Collection Update authority")]
-    #[account(2, signer, writable, name="payer", desc="payer")]
-    #[account(3, optional, name="authorization_rules", desc="Token Authorization Rules account")]
-    #[account(4, optional, name="authorization_rules_program", desc="Token Authorization Rules Program")]
+    #[account(1, signer, writable, name="payer", desc="Payer")]
+    #[account(2, optional, signer, name="creator", desc="Creator to verify")]
+    #[account(3, optional, signer, name="collection_authority", desc="Collection Update authority")]
+    #[account(4, optional, name="collection_mint", desc="Mint of the Collection")]
+    #[account(5, optional, writable, name="collection_metadata", desc="Metadata Account of the Collection")]
+    #[account(6, optional, name="collection_master_edition", desc="MasterEdition2 Account of the Collection Token")]
+    #[account(7, optional, name="collection_authority_record", desc="Collection Authority Record PDA")]
+    #[account(8, name="system_program", desc="System Program")]
+    #[account(9, optional, name="authorization_rules_program", desc="Token Authorization Rules Program")]
+    #[account(10, optional, name="authorization_rules", desc="Token Authorization Rules account")]
     #[default_optional_accounts]
     Verify(VerifyArgs),
 }

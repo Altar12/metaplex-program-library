@@ -759,3 +759,75 @@ impl InstructionBuilder for super::builders::Update {
         }
     }
 }
+
+/// Verifies a creator or collection for an asset.
+///
+/// # Accounts:
+///
+///   0. `[writable]` Metadata account
+///   1. `[signer, writable]` Payer
+///   2. `[optional, signer]` Creator to verify
+///   3. `[optional, signer]` Collection Update authority
+///   4. `[optional]` Mint of the Collection
+///   5. `[optional, writable]` Metadata Account of the Collection
+///   6. `[optional]` MasterEdition2 Account of the Collection Token
+///   7. `[optional]` Collection Authority Record PDA
+///   8. `[]` System program
+///   9. `[optional]` Token Authorization Rules Program
+///   10. `[optional]` Token Authorization Rules account
+impl InstructionBuilder for super::builders::Verify {
+    fn instruction(&self) -> solana_program::instruction::Instruction {
+        let mut accounts = vec![
+            AccountMeta::new(self.metadata, false),
+            AccountMeta::new(self.payer, true),
+            if let Some(creator) = self.creator {
+                AccountMeta::new_readonly(creator, true)
+            } else {
+                AccountMeta::new_readonly(crate::ID, false)
+            },
+            if let Some(collection_authority) = self.collection_authority {
+                AccountMeta::new_readonly(collection_authority, true)
+            } else {
+                AccountMeta::new_readonly(crate::ID, false)
+            },
+            if let Some(collection_mint) = self.collection_mint {
+                AccountMeta::new_readonly(collection_mint, false)
+            } else {
+                AccountMeta::new_readonly(crate::ID, false)
+            },
+            if let Some(collection_metadata) = self.collection_metadata {
+                AccountMeta::new(collection_metadata, false)
+            } else {
+                AccountMeta::new_readonly(crate::ID, false)
+            },
+            if let Some(collection_master_edition) = self.collection_master_edition {
+                AccountMeta::new_readonly(collection_master_edition, false)
+            } else {
+                AccountMeta::new_readonly(crate::ID, false)
+            },
+            if let Some(collection_authority_record) = self.collection_authority_record {
+                AccountMeta::new_readonly(collection_authority_record, false)
+            } else {
+                AccountMeta::new_readonly(crate::ID, false)
+            },
+            AccountMeta::new_readonly(self.system_program, false),
+        ];
+
+        // Optional authorization rules accounts
+        if let Some(rules) = &self.authorization_rules {
+            accounts.push(AccountMeta::new_readonly(mpl_token_auth_rules::ID, false));
+            accounts.push(AccountMeta::new_readonly(*rules, false));
+        } else {
+            accounts.push(AccountMeta::new_readonly(crate::ID, false));
+            accounts.push(AccountMeta::new_readonly(crate::ID, false));
+        }
+
+        Instruction {
+            program_id: crate::ID,
+            accounts,
+            data: MetadataInstruction::Verify(self.args.clone())
+                .try_to_vec()
+                .unwrap(),
+        }
+    }
+}
